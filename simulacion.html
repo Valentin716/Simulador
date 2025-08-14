@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador Completo - Cadena de Suministro Temu</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      padding: 20px;
+      color: #333;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #003366;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #0066cc;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0052a3;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background-color: #6c757d;
+    }
+
+    button.secondary:hover {
+      background-color: #5a6268;
+    }
+
+    #proceso {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 15px;
+      height: 300px;
+      overflow-y: auto;
+      font-size: 14px;
+      border: 1px solid #e9ecef;
+    }
+
+    .producto {
+      background: #e9f5ff;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border-left: 5px solid #3399ff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .producto-info {
+      flex: 1;
+    }
+
+    .producto-acciones {
+      display: flex;
+      gap: 8px;
+    }
+
+    .producto-acciones button {
+      width: auto;
+      padding: 8px 12px;
+      margin: 0;
+    }
+
+    .paso {
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .paso-icono {
+      font-size: 18px;
+    }
+
+    .modelo-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    .C2M { background: #ffecb3; color: #ff8f00; }
+    .JIT { background: #c8e6c9; color: #2e7d32; }
+    .VMI { background: #bbdefb; color: #1565c0; }
+    .IA { background: #e1bee7; color: #7b1fa2; }
+    .TRANS { background: #ffccbc; color: #e64a19; }
+    .LOCAL { background: #d7ccc8; color: #5d4037; }
+
+    .stats-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 150px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0066cc;
+      margin: 5px 0;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .progress-container {
+      width: 100%;
+      background: #e9ecef;
+      border-radius: 8px;
+      margin: 15px 0;
+      height: 10px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 8px;
+      background: #0066cc;
+      width: 0%;
+      transition: width 0.5s;
+    }
+
+    .supply-chain {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      position: relative;
+      height: 80px;
+    }
+
+    .supply-chain::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #ddd;
+      z-index: 1;
+    }
+
+    .chain-node {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 80px;
+    }
+
+    .node-circle {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border: 2px solid #0066cc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 5px;
+      font-weight: bold;
+      color: #0066cc;
+      transition: all 0.3s;
+    }
+
+    .node-label {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .active-node {
+      background: #0066cc !important;
+      color: white !important;
+    }
+
+    .queue-container {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .queue-visualization {
+      display: flex;
+      gap: 5px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .queue-item {
+      width: 30px;
+      height: 30px;
+      background: #0066cc;
+      color: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .waiting {
+      background: #ff9800;
+    }
+
+    .processing {
+      background: #4caf50;
+    }
+
+    .delayed {
+      background: #f44336;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 300px;
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    /* Estilos mejorados para el mapa */
+    .map-container {
+      width: 100%;
+      height: 500px;
+      margin-top: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    .map-legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-size: 12px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
+    }
+    
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      margin-right: 8px;
+      display: inline-block;
+    }
+    
+    .map-controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .map-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    
+    .map-btn:hover {
+      background: white;
+      transform: scale(1.1);
+    }
+    
+    /* Estilos para los marcadores */
+    .custom-marker {
+      background: #FF5722;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.3);
+      animation: pulse 2s infinite;
+    }
+    
+    .destination-marker {
+      background: #4CAF50;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.3);
+      animation: pulse 2s infinite 0.5s;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(255, 87, 34, 0.1); }
+      100% { transform: scale(1); box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.3); }
+    }
+    
+    /* Estilo para la ruta */
+    .route-path {
+      stroke: #00BCD4;
+      stroke-width: 4;
+      stroke-dasharray: 10, 10;
+      animation: dash 30s linear infinite;
+    }
+    
+    @keyframes dash {
+      to { stroke-dashoffset: 1000; }
+    }
+
+    .event-alert {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 0 4px 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .event-alert.danger {
+      background: #ffebee;
+      border-left: 4px solid #f44336;
+    }
+
+    .coupon {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 0 4px 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .coupon-code {
+      font-family: monospace;
+      font-weight: bold;
+      color: #2e7d32;
+      background: rgba(46, 125, 50, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .probability-card {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    
+    .probability-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ff9800;
+      margin: 5px 0;
+    }
+    
+    .probability-label {
+      font-size: 14px;
+      color: #6c757d;
+    }
+    
+    .probability-details {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .queue-chart-container {
+      width: 100%;
+      height: 250px;
+      margin-top: 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .reset-indicator {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 0 4px 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .card {
+        width: auto;
+      }
+      
+      .stats-container {
+        flex-direction: column;
+      }
+
+      .supply-chain {
+        flex-wrap: wrap;
+        height: auto;
+        gap: 10px;
+      }
+
+      .chain-node {
+        width: 60px;
+      }
+
+      .map-container {
+        height: 350px;
+      }
+      
+      .map-legend {
+        bottom: 10px;
+        right: 10px;
+        font-size: 10px;
+        padding: 8px;
+      }
+      
+      .legend-color {
+        width: 12px;
+        height: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🚚 Simulador Completo - Cadena de Suministro Temu</h1>
+
+  <div class="container">
+    <div class="card">
+      <h3>📦 Agregar Producto</h3>
+      <input type="text" id="nombreProducto" placeholder="Nombre del producto">
+      <input type="number" id="cantidadProducto" placeholder="Cantidad" min="1">
+      <select id="modeloProducto">
+        <option value="C2M">C2M (Consumer to Manufacturer)</option>
+        <option value="JIT">JIT (Just in Time)</option>
+        <option value="VMI">VMI (Vendor Managed Inventory)</option>
+        <option value="IA">IA Predictiva</option>
+        <option value="TRANS">Consolidación / Trans-shipping</option>
+        <option value="LOCAL">Fulfillment Local</option>
+      </select>
+      
+      <h4 style="margin-top: 20px;">📍 Ubicación de Entrega</h4>
+      <input type="text" id="ubicacionEntrega" placeholder="Ciudad, Estado">
+      <button onclick="agregarProducto()" id="btnAgregar">Agregar Producto</button>
+      
+      <div id="probabilidadContainer" style="display: none;">
+        <div class="probability-card">
+          <div class="probability-value" id="probabilidadValor">0%</div>
+          <div class="probability-label">Probabilidad de línea de espera</div>
+          <div class="probability-details" id="probabilidadDetalles">
+            La probabilidad aumenta con más productos y ubicaciones diferentes.
+          </div>
+        </div>
+        
+        <div class="queue-chart-container">
+          <canvas id="queueProbabilityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📋 Inventario Actual</h3>
+      <div id="inventario"></div>
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-value" id="totalProductos">0</div>
+          <div class="stat-label">Productos Totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalUnidades">0</div>
+          <div class="stat-label">Unidades Totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="tiempoEspera">0</div>
+          <div class="stat-label">Tiempo Espera (min)</div>
+        </div>
+      </div>
+      <button onclick="iniciarProceso()" id="btnIniciar">🚀 Iniciar Proceso de Envío</button>
+      <button class="secondary" onclick="resetearTodo()" id="btnLimpiar">🗑️ Limpiar Todo</button>
+    </div>
+
+    <div class="card">
+      <h3>⏳ Proceso en Tiempo Real</h3>
+      <div class="supply-chain" id="supplyChain">
+        <div class="chain-node">
+          <div class="node-circle" id="node1">1</div>
+          <div class="node-label">Fabricante</div>
+        </div>
+        <div class="chain-node">
+          <div class="node-circle" id="node2">2</div>
+          <div class="node-label">Almacén</div>
+        </div>
+        <div class="chain-node">
+          <div class="node-circle" id="node3">3</div>
+          <div class="node-label">Transporte</div>
+        </div>
+        <div class="chain-node">
+          <div class="node-circle" id="node4">4</div>
+          <div class="node-label">Centro Dist.</div>
+        </div>
+        <div class="chain-node">
+          <div class="node-circle" id="node5">5</div>
+          <div class="node-label">Cliente</div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      
+      <div class="queue-container">
+        <h4>🏷️ Teoría de Colas - Estado Actual</h4>
+        <div class="queue-visualization" id="queueVisualization"></div>
+      </div>
+      
+      <div id="proceso">El proceso de envío aparecerá aquí...</div>
+    </div>
+    
+    <div class="card">
+      <h3>📊 Gráfico de Desempeño</h3>
+      <div class="chart-container">
+        <canvas id="performanceChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>🗺️ Ruta de Entrega</h3>
+      <div class="map-container" id="map">
+        <div class="map-controls">
+          <button class="map-btn" id="btnSatellite" title="Vista satélite">🌍</button>
+          <button class="map-btn" id="btnResetView" title="Reiniciar vista">↻</button>
+        </div>
+        <div class="map-legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background: #FF5722;"></span>
+            <span>Centro Distribución</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #4CAF50;"></span>
+            <span>Destino</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #00BCD4;"></span>
+            <span>Ruta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3>🎫 Cupones Generados</h3>
+      <div id="cuponesContainer">No se han generado cupones aún</div>
+    </div>
+  </div>
+
+  <!-- Incluir Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Incluir Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  
+  <script>
+    // Variables globales optimizadas
+    let productos = [];
+    let procesoActivo = false;
+    let performanceChart = null;
+    let queueProbabilityChart = null;
+    let map = null;
+    let deliveryMarkers = [];
+    let deliveryRoute = null;
+    let queueItems = [];
+    let queueDelays = [];
+    let totalWaitTime = 0;
+    let generatedCoupons = [];
+    let currentProcessTimeout = null;
+    let probabilityHistory = [];
+    
+    // Eventos aleatorios optimizados
+    const randomEvents = [
+      { name: "Tráfico pesado", delay: 15, probability: 0.3, severity: "medium" },
+      { name: "Accidente vehicular", delay: 30, probability: 0.1, severity: "high" },
+      { name: "Problemas aduaneros", delay: 45, probability: 0.2, severity: "high" },
+      { name: "Demora en carga", delay: 20, probability: 0.25, severity: "medium" },
+      { name: "Clima adverso", delay: 25, probability: 0.15, severity: "high" },
+      { name: "Falta de personal", delay: 10, probability: 0.2, severity: "low" }
+    ];
+
+    // Función mejorada para inicializar el mapa
+    function initLeafletMap() {
+      try {
+        if (typeof L === 'undefined') {
+          console.warn("Leaflet no está disponible");
+          showMapFallback();
+          return;
+        }
+
+        if (map) {
+          map.remove();
+        }
+        
+        // Nuevo mapa con vista inicial en México
+        map = L.map('map', {
+          zoomControl: false,
+          attributionControl: false,
+          preferCanvas: true
+        }).setView([23.6345, -102.5528], 5);
+        
+        // Capa base mejorada
+        const lightMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Capa satélite opcional
+        const satelliteMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '© Esri'
+        });
+        
+        // Control de capas
+        const baseLayers = {
+          "Mapa": lightMap,
+          "Satélite": satelliteMap
+        };
+        
+        L.control.layers(baseLayers, null, {
+          position: 'topright'
+        }).addTo(map);
+        
+        // Control de zoom personalizado
+        L.control.zoom({
+          position: 'topright'
+        }).addTo(map);
+        
+        // Eventos para los botones de control
+        document.getElementById('btnSatellite').addEventListener('click', () => {
+          satelliteMap.addTo(map);
+          lightMap.remove();
+        });
+        
+        document.getElementById('btnResetView').addEventListener('click', () => {
+          map.setView([23.6345, -102.5528], 5);
+        });
+        
+        console.log('Mapa mejorado inicializado correctamente');
+
+      } catch (error) {
+        console.error("Error inicializando el mapa:", error);
+        showMapFallback();
+      }
+    }
+    
+    // Función para mostrar fallback cuando el mapa no puede cargar
+    function showMapFallback() {
+      const mapContainer = document.getElementById('map');
+      if (mapContainer) {
+        mapContainer.innerHTML = `
+          <div style="
+            padding: 40px; 
+            text-align: center; 
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+          ">
+            <!-- Elementos decorativos de fondo -->
+            <div style="
+              position: absolute;
+              top: 20%;
+              left: 10%;
+              width: 100px;
+              height: 100px;
+              background: rgba(255,255,255,0.1);
+              border-radius: 50%;
+              animation: float 6s ease-in-out infinite;
+            "></div>
+            <div style="
+              position: absolute;
+              top: 60%;
+              right: 20%;
+              width: 60px;
+              height: 60px;
+              background: rgba(255,255,255,0.05);
+              border-radius: 50%;
+              animation: float 4s ease-in-out infinite reverse;
+            "></div>
+            
+            <div style="font-size: 64px; margin-bottom: 20px; animation: pulse 2s ease-in-out infinite;">🗺️</div>
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">Mapa de Rutas</div>
+            <div style="font-size: 16px; opacity: 0.9; margin-bottom: 10px;">Visualización de entregas en tiempo real</div>
+            <div style="font-size: 14px; opacity: 0.7;">Las rutas se mostrarán aquí durante la simulación</div>
+            
+            <!-- Indicadores de ubicaciones -->
+            <div style="
+              position: absolute;
+              bottom: 30px;
+              left: 50%;
+              transform: translateX(-50%);
+              display: flex;
+              gap: 20px;
+              align-items: center;
+            ">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 12px; height: 12px; background: #FF5722; border-radius: 50%; animation: pulse 2s ease-in-out infinite;"></div>
+                <span style="font-size: 12px; opacity: 0.8;">Centro de Distribución</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 12px; height: 12px; background: #4CAF50; border-radius: 50%; animation: pulse 2s ease-in-out infinite 0.5s;"></div>
+                <span style="font-size: 12px; opacity: 0.8;">Destino</span>
+              </div>
+            </div>
+            
+            <style>
+              @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+              }
+              @keyframes pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.7; transform: scale(1.05); }
+              }
+            </style>
+          </div>
+        `;
+      }
+    }
+
+    // Optimización: Limpiar marcadores mejorado
+    function clearLeafletMarkers() {
+      if (!map) return;
+      
+      try {
+        deliveryMarkers.forEach(marker => {
+          if (map.hasLayer(marker)) {
+            map.removeLayer(marker);
+          }
+        });
+        deliveryMarkers = [];
+        
+        if (deliveryRoute && map.hasLayer(deliveryRoute)) {
+          map.removeLayer(deliveryRoute);
+          deliveryRoute = null;
+        }
+      } catch (error) {
+        console.error("Error limpiando marcadores:", error);
+      }
+    }
+
+    // Función mejorada para mostrar rutas
+    async function showDeliveryRoute(producto) {
+      if (!producto.ubicacionCoords) return;
+      
+      try {
+        if (map && typeof L !== 'undefined') {
+          clearLeafletMarkers();
+          
+          // Origen con variación aleatoria
+          const origin = {
+            lat: producto.ubicacionCoords.lat + (Math.random() * 4 - 2),
+            lng: producto.ubicacionCoords.lng + (Math.random() * 4 - 2)
+          };
+          
+          // Marcador de origen mejorado
+          const originMarker = L.marker([origin.lat, origin.lng], {
+            icon: L.divIcon({
+              className: 'custom-marker',
+              html: '🛒',
+              iconSize: [30, 30]
+            })
+          }).addTo(map).bindPopup("<b>Centro de distribución</b><br>Origen del envío");
+          
+          deliveryMarkers.push(originMarker);
+          
+          // Marcador de destino mejorado
+          const destMarker = L.marker([producto.ubicacionCoords.lat, producto.ubicacionCoords.lng], {
+            icon: L.divIcon({
+              className: 'destination-marker',
+              html: '🏠',
+              iconSize: [30, 30]
+            })
+          }).addTo(map).bindPopup(`<b>Destino:</b> ${producto.ubicacion}<br><small>${producto.nombre}</small>`);
+          
+          deliveryMarkers.push(destMarker);
+          
+          // Ruta más atractiva con puntos intermedios
+          const routePoints = [
+            [origin.lat, origin.lng],
+            [
+              (origin.lat + producto.ubicacionCoords.lat) / 2 + (Math.random() * 1 - 0.5),
+              (origin.lng + producto.ubicacionCoords.lng) / 2 + (Math.random() * 1 - 0.5)
+            ],
+            [producto.ubicacionCoords.lat, producto.ubicacionCoords.lng]
+          ];
+          
+          // Línea de ruta mejorada
+          deliveryRoute = L.polyline(routePoints, {
+            color: '#00BCD4',
+            weight: 4,
+            opacity: 0.9,
+            dashArray: '10, 10',
+            className: 'route-path'
+          }).addTo(map);
+          
+          // Ajustar vista para mostrar toda la ruta
+          map.fitBounds([
+            [origin.lat, origin.lng],
+            [producto.ubicacionCoords.lat, producto.ubicacionCoords.lng]
+          ], {
+            padding: [50, 50]
+          });
+          
+          // Animación de la ruta
+          let i = 0;
+          const interval = setInterval(() => {
+            if (i >= routePoints.length - 1) {
+              clearInterval(interval);
+              return;
+            }
+            
+            const subRoute = routePoints.slice(0, i + 2);
+            deliveryRoute.setLatLngs(subRoute);
+            i++;
+          }, 300);
+          
+        } else {
+          showRouteAnimation(producto);
+        }
+      } catch (error) {
+        console.error("Error mostrando ruta:", error);
+        showRouteAnimation(producto);
+      }
+    }
+
+    // Función para mostrar animación de ruta cuando no hay mapa
+    function showRouteAnimation(producto) {
+      const mapContainer = document.getElementById('map');
+      if (!mapContainer) return;
+
+      // Crear visualización animada de la ruta
+      mapContainer.innerHTML = `
+        <div style="
+          padding: 20px; 
+          text-align: center; 
+          color: #fff;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 8px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
+        ">
+          <!-- Ruta animada -->
+          <div style="
+            position: absolute;
+            top: 30%;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #00BCD4 10%, #00BCD4 90%, transparent 100%);
+            border-radius: 2px;
+            animation: routeFlow 3s ease-in-out infinite;
+          "></div>
+          
+          <!-- Punto de origen -->
+          <div style="
+            position: absolute;
+            top: 25%;
+            left: 15%;
+            width: 40px;
+            height: 40px;
+            background: #FF5722;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+          ">🛒</div>
+          
+          <!-- Punto de destino -->
+          <div style="
+            position: absolute;
+            top: 25%;
+            right: 15%;
+            width: 40px;
+            height: 40px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: pulse 2s ease-in-out infinite 1s;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+          ">🏠</div>
+          
+          <!-- Información de entrega -->
+          <div style="margin-top: 100px;">
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">🚚 Entrega en Proceso</div>
+            <div style="font-size: 18px; opacity: 0.9; margin-bottom: 10px;">${producto.nombre}</div>
+            <div style="font-size: 16px; opacity: 0.8;">📍 ${producto.ubicacion}</div>
+            <div style="font-size: 14px; opacity: 0.7; margin-top: 10px;">Modelo: ${producto.modelo}</div>
+          </div>
+          
+          <style>
+            @keyframes routeFlow {
+              0% { 
+                background: linear-gradient(90deg, #00BCD4 0%, transparent 10%, transparent 90%, transparent 100%);
+              }
+              50% { 
+                background: linear-gradient(90deg, transparent 0%, transparent 40%, #00BCD4 50%, transparent 60%, transparent 100%);
+              }
+              100% { 
+                background: linear-gradient(90deg, transparent 0%, transparent 90%, #00BCD4 100%);
+              }
+            }
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); opacity: 1; }
+              50% { transform: scale(1.1); opacity: 0.8; }
+            }
+          </style>
+        </div>
+      `;
+
+      // Restaurar el mapa después de unos segundos
+      setTimeout(() => {
+        if (typeof L === 'undefined') {
+          showMapFallback();
+        } else {
+          try {
+            initLeafletMap();
+          } catch (error) {
+            showMapFallback();
+          }
+        }
+      }, 4000);
+    }
+
+    // Optimización: Geocodificación con mejor manejo de errores
+    async function geocodeAddress(address, productId) {
+      try {
+        // Verificar si el producto aún existe
+        const producto = productos.find(p => p.id === productId);
+        if (!producto) {
+          console.warn("Producto no encontrado para geocodificación");
+          return;
+        }
+
+        // Crear una versión simplificada de la dirección para evitar errores
+        const cleanAddress = address.replace(/[^\w\s,]/g, '').trim();
+        if (!cleanAddress) {
+          console.warn("Dirección vacía después de limpieza");
+          return;
+        }
+
+        const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanAddress)}&limit=1`;
+        
+        // Usar fetch con timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos timeout
+        
+        const response = await fetch(nominatimUrl, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Temu Supply Chain Simulator'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          const productoActual = productos.find(p => p.id === productId);
+          if (productoActual) {
+            productoActual.ubicacionCoords = {
+              lat: parseFloat(data[0].lat),
+              lng: parseFloat(data[0].lon)
+            };
+            console.log(`Geocodificación exitosa para: ${address}`);
+          }
+        } else {
+          console.warn(`No se encontraron coordenadas para: ${address}`);
+          // Asignar coordenadas por defecto para México
+          const productoActual = productos.find(p => p.id === productId);
+          if (productoActual) {
+            productoActual.ubicacionCoords = {
+              lat: 23.6345 + (Math.random() * 10 - 5), // Coordenadas aleatorias cerca de México
+              lng: -102.5528 + (Math.random() * 10 - 5)
+            };
+          }
+        }
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.warn('Timeout en geocodificación:', address);
+        } else {
+          console.error("Error en geocodificación:", error);
+        }
+        
+        // Asignar coordenadas por defecto en caso de error
+        const producto = productos.find(p => p.id === productId);
+        if (producto) {
+          producto.ubicacionCoords = {
+            lat: 23.6345 + (Math.random() * 10 - 5), // Coordenadas aleatorias cerca de México
+            lng: -102.5528 + (Math.random() * 10 - 5)
+          };
+          console.log(`Usando coordenadas por defecto para: ${address}`);
+        }
+      }
+    }
+
+    // Función para inicializar el gráfico de probabilidad de líneas de espera
+    function initQueueProbabilityChart() {
+      const ctx = document.getElementById('queueProbabilityChart').getContext('2d');
+      
+      if (queueProbabilityChart) {
+        queueProbabilityChart.destroy();
+      }
+      
+      queueProbabilityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Productos', 'Ubicaciones', 'Modelos', 'Unidades'],
+          datasets: [
+            {
+              label: 'Impacto en Probabilidad (%)',
+              data: [0, 0, 0, 0],
+              backgroundColor: [
+                'rgba(255, 159, 64, 0.8)',
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(75, 192, 192, 0.8)'
+              ],
+              borderColor: [
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(75, 192, 192, 1)'
+              ],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Factores que Influyen en las Líneas de Espera'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 40,
+              title: {
+                display: true,
+                text: 'Impacto (%)'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Factores'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Función para actualizar el gráfico de probabilidad
+    function updateQueueProbabilityChart() {
+      if (!queueProbabilityChart || productos.length === 0) return;
+
+      // Contar ubicaciones únicas
+      const ubicacionesUnicas = [...new Set(productos.map(p => p.ubicacion))];
+      const modelosUnicos = [...new Set(productos.map(p => p.modelo))];
+      const cantidadTotal = productos.reduce((sum, p) => sum + p.cantidad, 0);
+
+      // Calcular impactos individuales (valores normalizados a porcentaje)
+      const impactoProductos = Math.min((productos.length / 5) * 20, 20); // Máximo 20%
+      const impactoUbicaciones = Math.min((ubicacionesUnicas.length / 3) * 40, 40); // Máximo 40%
+      const impactoModelos = (modelosUnicos.length / 6) * 20; // Máximo 20%
+      const impactoUnidades = Math.min((cantidadTotal / 100) * 20, 20); // Máximo 20%
+
+      queueProbabilityChart.data.datasets[0].data = [
+        impactoProductos,
+        impactoUbicaciones,
+        impactoModelos,
+        impactoUnidades
+      ];
+
+      queueProbabilityChart.update();
+    }
+
+    // Función para calcular probabilidad de línea de espera
+    function calcularProbabilidadLineaEspera() {
+      if (productos.length < 2) {
+        document.getElementById('probabilidadContainer').style.display = 'none';
+        return 0;
+      }
+      
+      // Contar ubicaciones únicas
+      const ubicacionesUnicas = [...new Set(productos.map(p => p.ubicacion))];
+      
+      // Factores que influyen en la probabilidad:
+      // 1. Número de productos (20% de peso)
+      // 2. Número de ubicaciones diferentes (40% de peso)
+      // 3. Modelos de suministro diversos (20% de peso)
+      // 4. Cantidad total de unidades (20% de peso)
+      
+      const numProductos = Math.min(productos.length / 5, 1); // Normalizado a 0-1
+      const numUbicaciones = Math.min(ubicacionesUnicas.length / 3, 1); // Normalizado a 0-1
+      
+      // Diversidad de modelos
+      const modelosUnicos = [...new Set(productos.map(p => p.modelo))];
+      const diversidadModelos = modelosUnicos.length / 6; // 6 modelos posibles
+      
+      // Cantidad total (normalizada considerando 100 como máximo)
+      const cantidadTotal = Math.min(productos.reduce((sum, p) => sum + p.cantidad, 0) / 100, 1);
+      
+      // Cálculo de probabilidad ponderada
+      let probabilidad = (
+        (numProductos * 0.2) + 
+        (numUbicaciones * 0.4) + 
+        (diversidadModelos * 0.2) + 
+        (cantidadTotal * 0.2)
+      ) * 100;
+      
+      // Ajustar para que no sea menor que 5% ni mayor que 95%
+      probabilidad = Math.max(5, Math.min(95, Math.round(probabilidad)));
+      
+      // Mostrar en la interfaz
+      document.getElementById('probabilidadContainer').style.display = 'block';
+      document.getElementById('probabilidadValor').textContent = `${probabilidad}%`;
+      
+      // Generar explicación detallada
+      let detalles = `Factores considerados:<br>`;
+      detalles += `- ${productos.length} producto(s) en el pedido<br>`;
+      detalles += `- ${ubicacionesUnicas.length} ubicación(es) diferente(s)<br>`;
+      detalles += `- ${modelosUnicos.length} modelo(s) de suministro distintos`;
+      
+      if (probabilidad > 70) {
+        detalles += `<br><strong>Alta probabilidad de demora:</strong> Considere consolidar pedidos o usar menos ubicaciones.`;
+      } else if (probabilidad > 40) {
+        detalles += `<br><strong>Probabilidad moderada:</strong> Algunos productos podrían experimentar demoras.`;
+      } else {
+        detalles += `<br><strong>Baja probabilidad:</strong> Es probable que la mayoría de productos lleguen a tiempo.`;
+      }
+      
+      document.getElementById('probabilidadDetalles').innerHTML = detalles;
+      
+      // Inicializar y actualizar gráfico si no existe
+      if (!queueProbabilityChart) {
+        initQueueProbabilityChart();
+      }
+      updateQueueProbabilityChart();
+      
+      return probabilidad;
+    }
+
+    function agregarProducto() {
+      if (procesoActivo) {
+        alert("No puedes agregar productos mientras el proceso está activo");
+        return;
+      }
+
+      const nombre = document.getElementById('nombreProducto').value.trim();
+      const cantidad = parseInt(document.getElementById('cantidadProducto').value);
+      const modelo = document.getElementById('modeloProducto').value;
+      const ubicacion = document.getElementById('ubicacionEntrega').value.trim();
+
+      if (!nombre || !cantidad || cantidad <= 0 || !ubicacion) {
+        alert("Por favor completa todos los campos correctamente.");
+        return;
+      }
+
+      const id = Date.now() + Math.random();
+      productos.push({ 
+        id, 
+        nombre, 
+        cantidad, 
+        modelo, 
+        estado: 'pendiente',
+        ubicacion,
+        ubicacionCoords: null,
+        tiempoEspera: 0,
+        eventos: [],
+        cuponGenerado: false
+      });
+      
+      geocodeAddress(ubicacion, id);
+      actualizarInventario();
+      limpiarFormulario();
+      
+      // Calcular y mostrar probabilidad después de agregar
+      calcularProbabilidadLineaEspera();
+    }
+
+    function limpiarFormulario() {
+      document.getElementById('nombreProducto').value = '';
+      document.getElementById('cantidadProducto').value = '';
+      document.getElementById('ubicacionEntrega').value = '';
+    }
+
+    function actualizarInventario() {
+      const inventario = document.getElementById('inventario');
+      inventario.innerHTML = "";
+      
+      if (productos.length === 0) {
+        inventario.innerHTML = "<p>No hay productos en el inventario</p>";
+      } else {
+        productos.forEach((producto, index) => {
+          const productoElement = document.createElement('div');
+          productoElement.className = 'producto';
+          productoElement.innerHTML = `
+            <div class="producto-info">
+              <strong>${producto.nombre}</strong> 
+              <span class="modelo-tag ${producto.modelo}">${producto.modelo}</span>
+              <div>Cantidad: ${producto.cantidad}</div>
+              <div>📍 ${producto.ubicacion}</div>
+              ${producto.tiempoEspera > 0 ? `<div>⏱ ${producto.tiempoEspera} min espera</div>` : ''}
+              ${producto.eventos.length > 0 ? `<div>⚠️ ${producto.eventos.length} evento(s)</div>` : ''}
+            </div>
+            <div class="producto-acciones">
+              <button class="secondary" onclick="eliminarProducto(${index})" ${procesoActivo ? 'disabled' : ''}>✕</button>
+            </div>
+          `;
+          inventario.appendChild(productoElement);
+        });
+      }
+      
+      actualizarEstadisticas();
+      actualizarBotones();
+    }
+
+    function actualizarEstadisticas() {
+      document.getElementById('totalProductos').textContent = productos.length;
+      document.getElementById('totalUnidades').textContent = productos.reduce((sum, p) => sum + p.cantidad, 0);
+      document.getElementById('tiempoEspera').textContent = totalWaitTime;
+    }
+
+    function actualizarBotones() {
+      const btnIniciar = document.getElementById('btnIniciar');
+      const btnLimpiar = document.getElementById('btnLimpiar');
+      const btnAgregar = document.getElementById('btnAgregar');
+      
+      btnIniciar.disabled = procesoActivo || productos.length === 0;
+      btnLimpiar.disabled = procesoActivo;
+      btnAgregar.disabled = procesoActivo;
+    }
+
+    function eliminarProducto(index) {
+      if (procesoActivo) {
+        alert("No puedes eliminar productos mientras el proceso está activo");
+        return;
+      }
+      productos.splice(index, 1);
+      actualizarInventario();
+      calcularProbabilidadLineaEspera();
+    }
+
+    // Optimización: Función completa de reseteo
+    function resetearTodo() {
+      if (procesoActivo) {
+        // Cancelar proceso activo
+        if (currentProcessTimeout) {
+          clearTimeout(currentProcessTimeout);
+          currentProcessTimeout = null;
+        }
+        procesoActivo = false;
+      }
+
+      // Resetear todas las variables
+      productos = [];
+      queueItems = [];
+      queueDelays = [];
+      totalWaitTime = 0;
+      generatedCoupons = [];
+      probabilityHistory = [];
+
+      // Limpiar interfaces
+      const proceso = document.getElementById('proceso');
+      proceso.innerHTML = `
+        <div class="reset-indicator">
+          <div class="paso-icono">🔄</div>
+          <div><strong>Sistema reseteado completamente</strong><br>Listo para nuevos productos</div>
+        </div>
+      `;
+
+      // Limpiar mapa
+      clearLeafletMarkers();
+      if (map) {
+        map.setView([23.6345, -102.5528], 5);
+      }
+
+      // Limpiar gráfico de desempeño
+      if (performanceChart) {
+        performanceChart.destroy();
+        performanceChart = null;
+      }
+
+      // Limpiar gráfico de probabilidad
+      if (queueProbabilityChart) {
+        queueProbabilityChart.destroy();
+        queueProbabilityChart = null;
+      }
+
+      // Limpiar cola
+      document.getElementById('queueVisualization').innerHTML = '';
+
+      // Resetear cadena de suministro
+      resetSupplyChain();
+
+      // Limpiar cupones
+      document.getElementById('cuponesContainer').innerHTML = 'No se han generado cupones aún';
+
+      // Ocultar probabilidad
+      document.getElementById('probabilidadContainer').style.display = 'none';
+
+      // Actualizar inventario y estadísticas
+      actualizarInventario();
+
+      // Limpiar formulario
+      limpiarFormulario();
+
+      console.log("Sistema completamente reseteado");
+    }
+
+    async function iniciarProceso() {
+      if (productos.length === 0) {
+        alert("No hay productos en el inventario para procesar");
+        return;
+      }
+      
+      if (procesoActivo) {
+        alert("El proceso ya está en ejecución");
+        return;
+      }
+      
+      procesoActivo = true;
+      actualizarBotones();
+      
+      const proceso = document.getElementById('proceso');
+      proceso.innerHTML = "";
+      
+      initPerformanceChart();
+      resetSupplyChain();
+      
+      try {
+        for (let i = 0; i < productos.length; i++) {
+          const producto = productos[i];
+          producto.estado = 'procesando';
+          actualizarInventario();
+          
+          await mostrarPaso(`📦 Iniciando proceso para: <strong>${producto.nombre}</strong> (${producto.cantidad} unidades)`, 1000);
+          
+          updateQueue(producto, 'waiting');
+          
+          const queueTime = Math.floor(Math.random() * 10) + 5;
+          await simulateWait(queueTime);
+          producto.tiempoEspera += queueTime;
+          totalWaitTime += queueTime;
+          updateQueue(producto, 'processing');
+          
+          await procesarSegunModelo(producto);
+          
+          updateNode(4, true);
+          await mostrarPaso("📦 Empaquetado y preparación final", 1000);
+          updateNode(5, true);
+          
+          await showDeliveryRoute(producto);
+          await mostrarPaso("🏠 Entrega al cliente finalizada", 1000);
+          
+          producto.estado = 'completado';
+          actualizarInventario();
+          updateQueue(producto, 'completed');
+          
+          if (producto.tiempoEspera > 20 && !producto.cuponGenerado) {
+            generateCoupon(producto);
+          }
+          
+          proceso.innerHTML += `<hr style="border: 0; height: 1px; background: #eee; margin: 15px 0;">`;
+          updatePerformanceChart();
+          resetSupplyChain();
+        }
+        
+      } catch (error) {
+        console.error("Error durante el proceso:", error);
+        mostrarPaso("❌ Error durante el proceso. Reiniciando...", 2000);
+      } finally {
+        procesoActivo = false;
+        actualizarBotones();
+      }
+    }
+
+    async function procesarSegunModelo(producto) {
+      updateNode(1, true);
+      
+      switch (producto.modelo) {
+        case "C2M":
+          await mostrarPaso("🔄 Pedido enviado directamente al fabricante (modelo C2M)", 1000);
+          await simulateRandomEvent(producto);
+          await mostrarPaso("🏭 Producción iniciada según demanda específica", 1000);
+          await simulateRandomEvent(producto);
+          await mostrarPaso("📤 Envío directo al cliente sin intermediarios", 1000);
+          break;
+        case "JIT":
+          await mostrarPaso("🕒 Producción iniciada bajo pedido (Just in Time)", 1000);
+          updateNode(2, true);
+          await simulateRandomEvent(producto);
+          await mostrarPaso("⏱️ Verificando cumplimiento de ventana de 72h", 1000);
+          await mostrarPaso("🚚 Envío rápido al centro de distribución", 1000);
+          break;
+        case "VMI":
+          await mostrarPaso("🏪 Inventario gestionado por el proveedor (VMI)", 1000);
+          updateNode(2, true);
+          await simulateRandomEvent(producto);
+          await mostrarPaso("📦 Almacenamiento temporal en centros Temu", 1000);
+          await mostrarPaso("📊 Optimización automática de niveles de stock", 1000);
+          updateNode(3, true);
+          await simulateRandomEvent(producto);
+          break;
+        case "IA":
+          await mostrarPaso("🤖 Predicción de demanda con IA", 1000);
+          updateNode(2, true);
+          await mostrarPaso("📈 Análisis de patrones de compra", 1000);
+          await simulateRandomEvent(producto);
+          await mostrarPaso("🚛 Ruta optimizada por algoritmos", 1000);
+          updateNode(3, true);
+          break;
+        case "TRANS":
+          await mostrarPaso("🚢 Consolidación de envíos (Trans-shipping)", 1000);
+          updateNode(2, true);
+          await mostrarPaso("📦 Agrupamiento con otros pedidos", 1000);
+          await simulateRandomEvent(producto);
+          await mostrarPaso("✈️ Envío internacional consolidado", 1500);
+          updateNode(3, true);
+          break;
+        case "LOCAL":
+          await mostrarPaso("🏘️ Procesamiento en fulfillment local", 1000);
+          updateNode(2, true);
+          await mostrarPaso("📦 Preparación en almacén cercano", 1000);
+          await mostrarPaso("🚲 Entrega con última milla local", 1000);
+          updateNode(3, true);
+          break;
+      }
+    }
+
+    async function simulateRandomEvent(producto) {
+      const eventRoll = Math.random();
+      const possibleEvents = randomEvents.filter(e => e.probability >= eventRoll);
+      
+      if (possibleEvents.length > 0) {
+        const event = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
+        producto.eventos.push(event);
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `event-alert ${event.severity === 'high' ? 'danger' : ''}`;
+        alertDiv.innerHTML = `
+          <div class="paso-icono">⚠️</div>
+          <div>
+            <strong>Evento inesperado:</strong> ${event.name}<br>
+            <small>Demora estimada: +${event.delay} minutos</small>
+          </div>
+        `;
+        
+        document.getElementById('proceso').appendChild(alertDiv);
+        producto.tiempoEspera += event.delay;
+        totalWaitTime += event.delay;
+        
+        updateQueue(producto, 'delayed');
+        await simulateWait(event.delay);
+        updateQueue(producto, 'processing');
+      }
+    }
+
+    function updateQueue(producto, status) {
+      const queueVisualization = document.getElementById('queueVisualization');
+      let existingItem = queueItems.find(item => item.id === producto.id);
+      
+      if (!existingItem) {
+        existingItem = {
+          id: producto.id,
+          element: document.createElement('div'),
+          status: status
+        };
+        
+        existingItem.element.className = `queue-item ${status}`;
+        existingItem.element.textContent = producto.nombre.charAt(0);
+        existingItem.element.title = `${producto.nombre} (${status})`;
+        
+        queueItems.push(existingItem);
+        queueVisualization.appendChild(existingItem.element);
+      } else {
+        existingItem.element.className = `queue-item ${status}`;
+        existingItem.status = status;
+        existingItem.element.title = `${producto.nombre} (${status})`;
+      }
+      
+      // Actualizar tiempos de espera en cola
+      if (status === 'waiting') {
+        queueDelays.push({
+          id: producto.id,
+          start: Date.now()
+        });
+      } else if (status === 'processing' || status === 'completed') {
+        const delayItem = queueDelays.find(item => item.id === producto.id);
+        if (delayItem) {
+          const delayTime = Math.floor((Date.now() - delayItem.start) / 1000 / 60);
+          producto.tiempoEspera += delayTime;
+          totalWaitTime += delayTime;
+          queueDelays = queueDelays.filter(item => item.id !== producto.id);
+        }
+      }
+    }
+
+    function resetSupplyChain() {
+      for (let i = 1; i <= 5; i++) {
+        const node = document.getElementById(`node${i}`);
+        node.classList.remove('active-node');
+      }
+    }
+
+    function updateNode(nodeNumber, active) {
+      const node = document.getElementById(`node${nodeNumber}`);
+      if (active) {
+        node.classList.add('active-node');
+      } else {
+        node.classList.remove('active-node');
+      }
+      
+      // Actualizar barra de progreso
+      const progress = (nodeNumber / 5) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+    }
+
+    function initPerformanceChart() {
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      
+      if (performanceChart) {
+        performanceChart.destroy();
+      }
+      
+      performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Inicio'],
+          datasets: [
+            {
+              label: 'Tiempo de espera (min)',
+              data: [0],
+              borderColor: '#0066cc',
+              backgroundColor: 'rgba(0, 102, 204, 0.1)',
+              tension: 0.1,
+              fill: true
+            },
+            {
+              label: 'Eventos inesperados',
+              data: [0],
+              borderColor: '#ff9800',
+              backgroundColor: 'rgba(255, 152, 0, 0.1)',
+              tension: 0.1,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function updatePerformanceChart() {
+      if (!performanceChart) return;
+      
+      const labels = performanceChart.data.labels;
+      const lastLabel = labels[labels.length - 1];
+      const newLabel = typeof lastLabel === 'number' ? lastLabel + 1 : 1;
+      
+      performanceChart.data.labels.push(newLabel);
+      
+      // Actualizar datos de tiempo de espera
+      performanceChart.data.datasets[0].data.push(totalWaitTime);
+      
+      // Actualizar datos de eventos
+      const totalEvents = productos.reduce((sum, p) => sum + p.eventos.length, 0);
+      performanceChart.data.datasets[1].data.push(totalEvents);
+      
+      performanceChart.update();
+    }
+
+    function generateCoupon(producto) {
+      const couponCode = `TEMU${Math.floor(1000 + Math.random() * 9000)}`;
+      generatedCoupons.push({
+        code: couponCode,
+        product: producto.nombre,
+        discount: Math.floor(10 + Math.random() * 20) // 10-30% de descuento
+      });
+      
+      producto.cuponGenerado = true;
+      
+      const couponDiv = document.createElement('div');
+      couponDiv.className = 'coupon';
+      couponDiv.innerHTML = `
+        <div class="paso-icono">🎫</div>
+        <div>
+          <strong>Cupón generado por demora</strong><br>
+          Usa el código <span class="coupon-code">${couponCode}</span> para tu próxima compra<br>
+          <small>${generatedCoupons[generatedCoupons.length - 1].discount}% de descuento (por demora en ${producto.nombre})</small>
+        </div>
+      `;
+      
+      const cuponesContainer = document.getElementById('cuponesContainer');
+      if (cuponesContainer.textContent.includes('No se han generado cupones aún')) {
+        cuponesContainer.innerHTML = '';
+      }
+      
+      cuponesContainer.appendChild(couponDiv);
+    }
+
+    async function mostrarPaso(mensaje, tiempo) {
+      const paso = document.createElement('div');
+      paso.className = 'paso';
+      paso.innerHTML = `
+        <div class="paso-icono">⏳</div>
+        <div>${mensaje}</div>
+      `;
+      
+      document.getElementById('proceso').appendChild(paso);
+      await simulateWait(tiempo / 1000);
+      
+      // Cambiar icono a completado después de esperar
+      const icono = paso.querySelector('.paso-icono');
+      if (icono) {
+        icono.textContent = '✅';
+      }
+    }
+
+    function simulateWait(seconds) {
+      return new Promise(resolve => {
+        currentProcessTimeout = setTimeout(() => {
+          resolve();
+        }, seconds * 1000);
+      });
+    }
+
+    // Inicializar el mapa cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+      actualizarInventario();
+      
+      // Esperar a que Leaflet se cargue completamente
+      if (typeof L !== 'undefined') {
+        initLeafletMap();
+      } else {
+        // Intentar cargar el mapa después de un delay
+        let attempts = 0;
+        const maxAttempts = 10;
+        const checkLeaflet = setInterval(() => {
+          attempts++;
+          if (typeof L !== 'undefined') {
+            clearInterval(checkLeaflet);
+            initLeafletMap();
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkLeaflet);
+            console.warn('Leaflet no pudo cargarse después de varios intentos');
+            // Mostrar mensaje alternativo en el mapa
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+              mapContainer.innerHTML = `
+                <div style="
+                  padding: 40px; 
+                  text-align: center; 
+                  color: #666;
+                  background: linear-gradient(45deg, #f0f4f8, #e2e8f0);
+                  border-radius: 8px;
+                  height: 100%;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                  align-items: center;
+                ">
+                  <div style="font-size: 48px; margin-bottom: 20px;">🗺️</div>
+                  <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Mapa no disponible</div>
+                  <div style="font-size: 14px;">Las rutas de entrega se mostrarán aquí cuando el mapa esté disponible</div>
+                </div>
+              `;
+            }
+          }
+        }, 500);
+      }
+    });
+
+    // También intentar inicializar el mapa cuando la ventana termine de cargar
+    window.addEventListener('load', () => {
+      if (!map && typeof L !== 'undefined') {
+        setTimeout(() => {
+          initLeafletMap();
+        }, 500);
+      }
+    });
+  </script>
+</body>
+</html>
