@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temu - Simulador de Cadena de Suministro</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --temu-red: #e02b20;
+      --temu-dark-red: #c41e19;
+      --temu-yellow: #ffd500;
+      --temu-dark: #333333;
+      --temu-light: #f8f9fa;
+      --temu-gray: #6c757d;
+      --temu-border: #e0e0e0;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      color: var(--temu-dark);
+      line-height: 1.6;
+    }
+    
+    /* Header estilo Temu */
+    .temu-header {
+      background: linear-gradient(to right, var(--temu-red), var(--temu-dark-red));
+      color: white;
+      padding: 12px 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    .logo i {
+      margin-right: 10px;
+      color: var(--temu-yellow);
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.3s;
+    }
+    
+    .nav-links a:hover {
+      opacity: 0.8;
+    }
+    
+    .user-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    
+    .user-actions button {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    /* Banner promocional */
+    .promo-banner {
+      background: linear-gradient(to right, #4e54c8, #8f94fb);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+    }
+    
+    /* Contenedor principal */
+    .main-container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    
+    .page-title {
+      text-align: center;
+      margin: 20px 0;
+      color: var(--temu-dark);
+      font-size: 28px;
+    }
+    
+    /* Tarjetas de productos */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .temu-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .temu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .card-header {
+      background: linear-gradient(to right, var(--temu-red), var(--temu-dark-red));
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .card-content {
+      padding: 20px;
+    }
+    
+    /* Formularios y botones */
+    .temu-input {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 8px 0;
+      border: 1px solid var(--temu-border);
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    
+    .temu-btn {
+      background: linear-gradient(to right, var(--temu-red), var(--temu-dark-red));
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    .temu-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    
+    .temu-btn-secondary {
+      background: var(--temu-gray);
+    }
+    
+    /* Inventario */
+    .producto {
+      background: #f9f9f9;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid var(--temu-red);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .producto-info {
+      flex: 1;
+    }
+    
+    .producto-acciones {
+      display: flex;
+      gap: 10px;
+    }
+    
+    /* Proceso de cadena de suministro */
+    .supply-chain {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      position: relative;
+      height: 80px;
+    }
+    
+    .supply-chain::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--temu-border);
+      z-index: 1;
+    }
+    
+    .chain-node {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 80px;
+    }
+    
+    .node-circle {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border: 2px solid var(--temu-red);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 5px;
+      font-weight: bold;
+      color: var(--temu-red);
+      transition: all 0.3s;
+    }
+    
+    .active-node {
+      background: var(--temu-red) !important;
+      color: white !important;
+    }
+    
+    /* Mapa */
+    .map-container {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Footer */
+    .temu-footer {
+      background: var(--temu-dark);
+      color: white;
+      padding: 30px 0;
+      margin-top: 40px;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      padding: 0 20px;
+    }
+    
+    .footer-section h3 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .footer-section ul {
+      list-style: none;
+    }
+    
+    .footer-section ul li {
+      margin-bottom: 10px;
+    }
+    
+    .footer-section a {
+      color: #ddd;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .footer-section a:hover {
+      color: white;
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #444;
+      margin-top: 20px;
+      color: #aaa;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .supply-chain {
+        flex-wrap: wrap;
+        height: auto;
+        gap: 15px;
+      }
+      
+      .chain-node {
+        width: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header estilo Temu -->
+  <header class="temu-header">
+    <div class="header-container">
+      <div class="logo">
+        <i class="fas fa-store"></i>
+        <span>TEMU</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#">Inicio</a>
+        <a href="#">Productos</a>
+        <a href="#">Categorías</a>
+        <a href="#">Ofertas</a>
+      </nav>
+      <div class="user-actions">
+        <button><i class="fas fa-search"></i></button>
+        <button><i class="fas fa-user"></i></button>
+        <button><i class="fas fa-shopping-cart"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner promocional -->
+  <div class="promo-banner">
+    <p>¡Envío GRATIS en pedidos superiores a $20 | Ofertas exclusivas todos los días!</p>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-container">
+    <h1 class="page-title">Simulador de Cadena de Suministro Temu</h1>
+    
+    <div class="cards-grid">
+      <!-- Tarjeta de agregar producto -->
+      <div class="temu-card">
+        <div class="card-header">
+          <i class="fas fa-plus-circle"></i>
+          <h3>Agregar Producto</h3>
+        </div>
+        <div class="card-content">
+          <input type="text" class="temu-input" placeholder="Nombre del producto">
+          <input type="number" class="temu-input" placeholder="Cantidad" min="1">
+          <select class="temu-input">
+            <option value="C2M">C2M (Consumer to Manufacturer)</option>
+            <option value="JIT">JIT (Just in Time)</option>
+            <option value="VMI">VMI (Vendor Managed Inventory)</option>
+            <option value="IA">IA Predictiva</option>
+            <option value="TRANS">Consolidación / Trans-shipping</option>
+            <option value="LOCAL">Fulfillment Local</option>
+          </select>
+          <input type="text" class="temu-input" placeholder="Ubicación de entrega">
+          <button class="temu-btn">Agregar Producto</button>
+        </div>
+      </div>
+
+      <!-- Tarjeta de inventario -->
+      <div class="temu-card">
+        <div class="card-header">
+          <i class="fas fa-boxes"></i>
+          <h3>Inventario Actual</h3>
+        </div>
+        <div class="card-content">
+          <div class="producto">
+            <div class="producto-info">
+              <strong>Auriculares Bluetooth</strong>
+              <div>Cantidad: 50 unidades</div>
+              <div>📍 Ciudad de México</div>
+            </div>
+            <div class="producto-acciones">
+              <button class="temu-btn" style="padding: 8px; width: auto;"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          
+          <div class="producto">
+            <div class="producto-info">
+              <strong>Smartwatch Deportivo</strong>
+              <div>Cantidad: 30 unidades</div>
+              <div>📍 Guadalajara</div>
+            </div>
+            <div class="producto-acciones">
+              <button class="temu-btn" style="padding: 8px; width: auto;"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="temu-btn">Iniciar Proceso</button>
+            <button class="temu-btn temu-btn-secondary">Limpiar Todo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de proceso -->
+      <div class="temu-card">
+        <div class="card-header">
+          <i class="fas fa-truck-loading"></i>
+          <h3>Proceso en Tiempo Real</h3>
+        </div>
+        <div class="card-content">
+          <div class="supply-chain">
+            <div class="chain-node">
+              <div class="node-circle active-node">1</div>
+              <div>Fabricante</div>
+            </div>
+            <div class="chain-node">
+              <div class="node-circle">2</div>
+              <div>Almacén</div>
+            </div>
+            <div class="chain-node">
+              <div class="node-circle">3</div>
+              <div>Transporte</div>
+            </div>
+            <div class="chain-node">
+              <div class="node-circle">4</div>
+              <div>Centro Dist.</div>
+            </div>
+            <div class="chain-node">
+              <div class="node-circle">5</div>
+              <div>Cliente</div>
+            </div>
+          </div>
+          
+          <div style="background: #f0f0f0; border-radius: 8px; padding: 15px; margin-top: 20px; height: 150px; overflow-y: auto;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <i class="fas fa-check-circle" style="color: green;"></i>
+              <span>Producto agregado al inventario</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <i class="fas fa-sync-alt" style="color: orange;"></i>
+              <span>Procesando pedido con el fabricante</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="far fa-clock" style="color: blue;"></i>
+              <span>Preparando para el envío</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segunda fila de tarjetas -->
+    <div class="cards-grid">
+      <!-- Tarjeta de gráficos -->
+      <div class="temu-card">
+        <div class="card-header">
+          <i class="fas fa-chart-line"></i>
+          <h3>Gráfico de Desempeño</h3>
+        </div>
+        <div class="card-content">
+          <div style="height: 250px; background: #f0f0f0; border-radius: 8px; display: flex; justify-content: center; align-items: center;">
+            <p style="color: #666;">Gráfico de rendimiento se mostrará aquí</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de mapa -->
+      <div class="temu-card">
+        <div class="card-header">
+          <i class="fas fa-map-marked-alt"></i>
+          <h3>Ruta de Entrega</h3>
+        </div>
+        <div class="card-content">
+          <div class="map-container">
+            <div style="height: 100%; background: linear-gradient(to right, #74b9ff, #0984e3); display: flex; justify-content: center; align-items: center; color: white; flex-direction: column;">
+              <i class="fas fa-map-marker-alt" style="font-size: 48px; margin-bottom: 15px;"></i>
+              <p>Mapa de rutas de entrega</p>
+              <p style="font-size: 14px; margin-top: 10px;">Las rutas se mostrarán durante la simulación</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de cupones -->
+      <div class="temu-card">
+        <div class="card-header">
+          <i class="fas fa-tags"></i>
+          <h3>Cupones Generados</h3>
+        </div>
+        <div class="card-content">
+          <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-ticket-alt" style="color: #4caf50;"></i>
+              <div>
+                <strong>Cupón por demora</strong>
+                <p style="font-size: 14px;">Código: <span style="font-weight: bold;">TEMU1234</span> - 15% descuento</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3; margin-top: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-gift" style="color: #2196f3;"></i>
+              <div>
+                <strong>Cupón de bienvenida</strong>
+                <p style="font-size: 14px;">Código: <span style="font-weight: bold;">TEMUWELCOME</span> - 10% descuento</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="temu-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Acerca de Temu</h3>
+        <ul>
+          <li><a href="#">Sobre nosotros</a></li>
+          <li><a href="#">Trabaja con nosotros</a></li>
+          <li><a href="#">Noticias</a></li>
+          <li><a href="#">Responsabilidad social</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Servicio al cliente</h3>
+        <ul>
+          <li><a href="#">Centro de ayuda</a></li>
+          <li><a href="#">Cómo comprar</a></li>
+          <li><a href="#">Devoluciones</a></li>
+          <li><a href="#">Contacto</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Políticas</h3>
+        <ul>
+          <li><a href="#">Términos y condiciones</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+          <li><a href="#">Política de envíos</a></li>
+          <li><a href="#">Política de devoluciones</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-section">
+        <h3>Síguenos</h3>
+        <ul>
+          <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+          <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+          <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+          <li><a href="#"><i class="fab fa-youtube"></i> YouTube</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <p>&copy; 2023 Temu. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Funcionalidad básica para los botones
+    document.addEventListener('DOMContentLoaded', function() {
+      // Simular proceso de la cadena de suministro
+      const nodes = document.querySelectorAll('.node-circle');
+      let currentActive = 0;
+      
+      const simulateProcess = () => {
+        if (currentActive < nodes.length) {
+          nodes[currentActive].classList.add('active-node');
+          currentActive++;
+          setTimeout(simulateProcess, 1000);
+        }
+      };
+      
+      // Iniciar simulación al hacer clic en el botón
+      document.querySelector('.temu-btn').addEventListener('click', function() {
+        // Reiniciar nodos
+        nodes.forEach(node => node.classList.remove('active-node'));
+        currentActive = 0;
+        
+        // Iniciar simulación
+        setTimeout(simulateProcess, 500);
+      });
+    });
+  </script>
+</body>
+</html>
